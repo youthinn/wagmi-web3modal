@@ -1,0 +1,22 @@
+{
+  "name": "wagmi-web3modal",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@wagmi/core": "^1.0.2",
+    "@web3modal/ethereum": "^2.4.1",
+    "@web3modal/html": "^2.4.1",
+    "viem": "^0.3.24",
+    "vue": "^3.2.47"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.1.0",
+    "vite": "^4.3.2"
+  }
+}
