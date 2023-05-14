@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <h1>{{ userStore.isWallet }}</h1>
+  </div>
   <div class="user">
     <p>User ID: {{ userId }}</p>
     <p>User Balance: {{ balance }}</p>
@@ -52,6 +55,7 @@ import {
   arbitrumGoerli,
   goerli,
 } from "@wagmi/core/chains";
+import * as allChains from "@wagmi/core/chains";
 
 import { MetaMaskConnector } from "@wagmi/core/connectors/metaMask";
 import { CoinbaseWalletConnector } from "@wagmi/core/connectors/coinbaseWallet";
@@ -59,11 +63,18 @@ import { WalletConnectConnector } from "@wagmi/core/connectors/walletConnect";
 import { alchemyProvider } from "@wagmi/core/providers/alchemy";
 import { infuraProvider } from "@wagmi/core/providers/infura";
 
-const chains = [arbitrum, mainnet, polygon, arbitrumGoerli, goerli];
+import { useUserStore } from "../store/wallet";
+// const chains = [arbitrum, mainnet, polygon, arbitrumGoerli, goerli];
+const chains = [];
+for (let item in allChains) {
+  chains.push(allChains[item]);
+}
 
 const projectId = "624944ddf69f52071b35b4c4aa7f602f";
 const alchemyId = "PtFrLzZBPY8AFYyGGxPNRXF_Tdcpeshh";
 const infuraId = "ac0a86e0154e4d7a83283ad1b14de881";
+
+const userStore = useUserStore();
 
 const { publicClient } = configureChains(chains, [
   alchemyProvider({ apiKey: alchemyId }),
@@ -74,7 +85,7 @@ const userId = ref(null);
 const balance = ref(null);
 const networkId = ref(null);
 const txHash = ref(null);
-const changeChainId = 421613;
+const changeChainId = 280;
 const toUserId = "0xb93f43B96F05C63700E3D3Fa23D5Dff0ce18F9df";
 
 const wagmiConfig = createConfig({
@@ -104,6 +115,7 @@ const wallet = async (item) => {
   const account = getAccount();
   console.log("wallet account", account);
   userId.value = await account.address;
+  userStore.isWallet = true;
 };
 
 const getBalanceBth = async () => {
@@ -119,21 +131,26 @@ const switchNetworkBth = async () => {
   const getNetworkId = await getNetwork();
   networkId.value = getNetworkId.chain.id;
   console.log("getNetworkId", getNetworkId);
-  if (getNetworkId.chain.id !== getNetworkId) {
-    const network = await switchNetwork({
-      chainId: changeChainId,
-    });
-    networkId.value = network.id;
-    console.log("newtork", network);
+  try {
+    if (getNetworkId.chain.id !== changeChainId) {
+      const network = await switchNetwork({
+        chainId: changeChainId,
+      });
+      networkId.value = network.id;
+      console.log("newtork", network);
+    }
+  } catch (e) {
+    console.error("Switch Network", e);
   }
 };
 
 const sendTransactionClick = async () => {
   const request = await prepareSendTransaction({
-    account: userId.value,
+    // account: userId.value,
     to: toUserId,
-    value: parseEther("0.00141013"),
-    chainId: networkId.value,
+    value: parseEther("0.00000141013"),
+    chainId: changeChainId.value,
+    // chainId: networkId.value,
   });
   console.log("sendTransaction request", request);
   const { hash } = await sendTransaction(request);
@@ -150,7 +167,12 @@ const modal = async () => {
 
 const dis = async () => {
   await disconnect();
-  const account = getAccount();
+  userId.value = null;
+  balance.value = null;
+  networkId.value = null;
+  txHash.value = null;
+  userStore.isWallet = false;
+  account.value = getAccount();
   console.log("disconnect account", account);
 };
 </script>
