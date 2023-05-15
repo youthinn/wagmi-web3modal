@@ -11,6 +11,7 @@
   <hr />
   <hr />
   <hr />
+  <!-- <w3m-qrcode imageUrl="url/to/image" size="200" uri="data"></w3m-qrcode> -->
   <div>
     <button v-for="item in wagmiConfig.connectors" @click="wallet(item)">
       {{ item.name }}
@@ -28,7 +29,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import {
   EthereumClient,
   w3mConnectors,
@@ -75,6 +76,9 @@ const alchemyId = "PtFrLzZBPY8AFYyGGxPNRXF_Tdcpeshh";
 const infuraId = "ac0a86e0154e4d7a83283ad1b14de881";
 
 const userStore = useUserStore();
+// const account = getAccount();
+// console.log(account);
+onMounted(() => {});
 
 const { publicClient } = configureChains(chains, [
   alchemyProvider({ apiKey: alchemyId }),
@@ -157,13 +161,31 @@ const sendTransactionClick = async () => {
   txHash.value = hash;
   console.log("hash", hash);
 };
+// const { address } = await getAccount();
+// console.log(address);
+
+const unsubscribe = web3modal.subscribeModal((newState) =>
+  console.log(newState)
+);
+unsubscribe();
 
 const modal = async () => {
   const res = await web3modal.openModal();
-  console.log(res);
-  const account = getAccount();
+  console.log("res", res);
+  const account = await getAccount();
+  userId.value = await account.address;
+  userStore.isWallet = await true;
   console.log("web3modal account", account);
+
+  // const provider = await web3Modal.connect();
+  // console.log(provider);
 };
+
+// Web3Modal.on("connect", async (provider) => {
+//   console.log(provider); // 用户选择的钱包提供程序将被打印到控制台中
+//   const web3 = new Web3(provider); // 使用所选的钱包提供程序创建一个新的Web3实例
+//   // 在这里执行您想要执行的其他操作...
+// });
 
 const dis = async () => {
   await disconnect();
@@ -172,7 +194,7 @@ const dis = async () => {
   networkId.value = null;
   txHash.value = null;
   userStore.isWallet = false;
-  account.value = getAccount();
+  const account = getAccount();
   console.log("disconnect account", account);
 };
 </script>
